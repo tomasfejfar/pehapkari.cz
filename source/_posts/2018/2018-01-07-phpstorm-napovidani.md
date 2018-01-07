@@ -70,12 +70,12 @@ Union typ je typ, který se skládá z více dalších typů. Představme si nap
 function __construct($date) { /* ... */ }
 ```
  
-V tomhle případě nemůžete uvést jako datový typ proměnné `$date` prostě `DateTime|DateTimeImmutable|string|int`. [Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Je potřeba se vrátit zpět k docblockům:  
+V tomhle případě nemůžete uvést jako datový typ proměnné `$date` prostě `DateTimeInterface|string|int`. [Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Je potřeba se vrátit zpět k docblockům:  
 
 ```php
 <?php
 /**
- * @param DateTime|DateTimeImmutable|string|int $date
+ * @param DateTimeInterface|string|int $date
  */
 function __construct($date) { /* ... */ }
 ```
