@@ -11,7 +11,7 @@ lang: cs
 
 Fungující napovídání syntaxe vašeho kódu je naprosto základním předpokladem pro dobré fungování pokročilých nástrojů, které vám PhpStorm nabízí. Existuje několik možností, jak PhpStormu pomoci váš kód pochopit. Začneme těmi základními a postupně se dostaneme až k pokročilým. 
 
-Nástroje jako refaktoring a inspekce kódu jsou plně závislé na tom, jak dobře dokáže PhpStorm váš kód pochopit. Ale protože je PHP netypový jazyk, tak je to mnohem složitější úkol, než třeba v Jave.
+Nástroje jako refaktoring a inspekce kódu jsou plně závislé na tom, jak dobře dokáže PhpStorm váš kód pochopit. Ale protože je PHP dynamicky typovaný jazyk, tak je to mnohem složitější úkol, než třeba ve staticky typované Javě.
 
 Ať se nám to líbí nebo ne, tak spousta existujícího PHP kódu je založena na více či méně náhodných polích. Ne každý má to štěstí, že může pracovat s kódem napsaným letos pro PHP 7.2 podle DDD a naprosto striktně dodržujícím SRP. Velmi pravděpodobně se naopak setkáte s kódem, který by mohl běžet i na PHP 5.3. A někdy bohužel na produkci i běží. 
 
@@ -47,7 +47,7 @@ Docblocky jsou skvělý nástroj pro starší verze PHP. Pro moderní verze PHP 
 
 ### Deklarace typů
 
-V aktuální verzi PHP 7.2 je možné výše zmíněný kus kódu přepsat do následující podoby: 
+Od PHP 7.1 (pokud se obejdete bez nullable, tak již od 7.0) je možné výše zmíněný kus kódu přepsat do následující podoby: 
 
 ```php
 <?php
@@ -63,19 +63,21 @@ Tato konstrukce má úplně ten samý význam, ale místo komentářů využív�
 
 ## Union typy a pole
 
-Union typ je typ, který se skládá z více dalších typů. Například:  
+Union typ je typ, který se skládá z více dalších typů. Představme si například třídu, která pracuje s datumem a v konstruktoru přijímá všechny možné formáty (string, unix timestamp nebo instanci DateTime)
 
 ```php
 <?php 
-class Address implements ToCountryInterface, ToTownInterface {}
+function __construct($date) { /* ... */ }
 ```
  
-V tomhle případě nemůžete uvést jako návratový typ prostě `ToCountryInterface|ToTownInterface`. [Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Zde je potřeba se vrátit zpět k docblockům:  
+V tomhle případě nemůžete uvést jako datový typ proměnné `$date` prostě `DateTime|DateTimeImmutable|string|int`. [Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Je potřeba se vrátit zpět k docblockům:  
 
 ```php
+<?php
 /**
- * @param ToCountryInterface|ToTownInterface $countryAndTownLocalisableAddress
+ * @param DateTime|DateTimeImmutable|string|int $date
  */
+function __construct($date) { /* ... */ }
 ```
 
 Dalším případem, kde je třeba návrat k docblockům, jsou generika a pole objektů. Databázový dotaz může například vrátit kolekci uživatelů (`Collection`). Pomocí typové deklarace můžeme napsat
@@ -105,7 +107,7 @@ Továrny a service lokátory vrací různé typy podle toho, s jakým parametrem
 ```php
 <?php
 // není jasné, jakého bude $logger typu
-$logger = $serviceLocator->get('LoggerInterface');
+$logger = $container->get('LoggerInterface');
 $logger->???
 ```
 
@@ -114,7 +116,7 @@ Můžeme však napovědět přímo v kódu dokumentačním komentářem.
 ```php
 <?php
 /** @var LoggerInterface $logger */
-$logger = $serviceLocator->get('LoggerInterface');
+$logger = $container->get('LoggerInterface');
 $logger->log(/* code completion */);
 ```
 
@@ -132,7 +134,11 @@ Tento způsob je široce podporovaný a mnoho nástrojů ho dokáže využívat.
  * @method static Config factory()
  */
 class Config {
-    private $config = ['username' => 'john', 'name' => 'John Doe', 'password' => '123456'];
+    private $config = [
+        'username' => 'john', 
+        'name' => 'John Doe', 
+        'password' => '123456'
+    ];
     
     public function __get($property){
         if ($property === 'password') {
