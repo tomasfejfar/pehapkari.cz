@@ -59,7 +59,7 @@ public function createUser(string $name, int $age, ?Address $address): User
 }
 ```
 
-Tato konstrukce má úplně ten samý význam, ale místo komentářů využívá přímo konstrukce jazyka. Díky tomu jsou typy vynuceny, když funkci použijeme. Pokud je `$age` definováno jako integer, tak si můžeme být jisti, že to opravdu interger bude. Není třeba žádné další validace. Samotné PHP by vyhodilo `TypeError` pokud bychom tam poslali cokoli jiného. Jen je třeba se ujistit, že máte v souboru [přidanou  `strict_types` deklaraci](http://php.net/manual/en/functions.arguments.php#functions.arguments.type-declaration.strict), která vypne přetypovávání. V opačném případě vám PHP s klidem převede `"11 horses"` na `11` [jako normálně](https://3v4l.org/QlLOV) (pro porovnání chování se [strict types](https://3v4l.org/bUAEr)).
+Tato konstrukce má úplně ten samý význam, ale místo komentářů využívá přímo konstrukce jazyka. Díky tomu jsou typy vynuceny, když funkci použijeme. Pokud je `$age` definováno jako integer, tak si můžeme být jisti, že to opravdu integer bude. Není třeba žádné další validace. Samotné PHP by vyhodilo `TypeError` pokud bychom tam poslali cokoli jiného. Jen je třeba se ujistit, že máte v souboru [přidanou  `strict_types` deklaraci](http://php.net/manual/en/functions.arguments.php#functions.arguments.type-declaration.strict), která vypne přetypovávání. V opačném případě vám PHP s klidem převede `"11 horses"` na `11` [jako normálně](https://3v4l.org/QlLOV) (pro porovnání chování se [strict types](https://3v4l.org/bUAEr)).
 
 ## Union typy a pole
 
