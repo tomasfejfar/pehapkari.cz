@@ -1,5 +1,5 @@
 ---
-id: 54
+id: 55
 layout: post
 title: "Jak naučit PhpStorm chápat kód"
 perex: '''
