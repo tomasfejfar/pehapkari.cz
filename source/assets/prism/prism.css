@@ -101,9 +101,12 @@ pre[class*="language-"] {
 .token.boolean,
 .token.number,
 .token.constant,
-.token.symbol,
-.token.deleted {
+.token.symbol {
 	color: #268bd2; /* blue */
+}
+
+.token.deleted {
+	color: #dc322f; /* blue */
 }
 
 .token.selector,
@@ -111,9 +114,12 @@ pre[class*="language-"] {
 .token.string,
 .token.char,
 .token.builtin,
-.token.url,
-.token.inserted {
+.token.url {
 	color: #2aa198; /* cyan */
+}
+
+.token.inserted {
+	color: #859900; /* cyan */
 }
 
 .token.entity {
