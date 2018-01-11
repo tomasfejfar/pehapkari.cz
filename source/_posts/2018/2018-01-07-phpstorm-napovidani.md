@@ -3,13 +3,11 @@ id: 55
 layout: post
 title: "Jak naučit PhpStorm chápat kód"
 perex: '''
-Fungující napovídání syntaxe vašeho kódu je naprosto základním předpokladem pro dobré fungování pokročilých nástrojů, které vám PhpStorm nabízí. Existuje několik možností, jak PhpStormu pomoci váš kód pochopit, a v tomto článku si je postupně ukážeme.  
+Fungující napovídání syntaxe vašeho kódu je naprosto základním předpokladem pro dobré fungování pokročilých nástrojů, které vám PhpStorm nabízí. Existuje několik možností, jak PhpStormu pomoci váš kód pochopit. Začneme těmi základními a postupně se dostaneme až k pokročilým.  
 '''
 author: 6
 lang: cs
 ---
-
-Fungující napovídání syntaxe vašeho kódu je naprosto základním předpokladem pro dobré fungování pokročilých nástrojů, které vám PhpStorm nabízí. Existuje několik možností, jak PhpStormu pomoci váš kód pochopit. Začneme těmi základními a postupně se dostaneme až k pokročilým. 
 
 Nástroje jako refaktoring a inspekce kódu jsou plně závislé na tom, jak dobře dokáže PhpStorm váš kód pochopit. Ale protože je PHP dynamicky typovaný jazyk, tak je to mnohem složitější úkol, než třeba ve staticky typované Javě. 
 
@@ -22,14 +20,11 @@ function getUser() {
 }
 ```
 
-Co myslíte, že to vrátí? Instanci `User`? Nějaké ID? Uživatelské jméno? Co když to vrátí `false` pro nepřihlášeného uživatele? Těžko říct.  
-
-Nicméně člověk to může pochopit z kontextu. Podívám se dovnitř té servicy, vidím, že to tahá ze session a nikde to nic nedeserializuje a je tam test `if ($user != "")`. Tak to asi bude uživatelské jméno. Nejspíš. 
+Co myslíte, že to vrátí? Instanci `User`? Nějaké ID? Uživatelské jméno? Co když to vrátí `false` pro nepřihlášeného uživatele? *Těžko říct.*
 
 A co takhle? 
 
 ```diff
-<?php
 +/**
 + * @return string|bool username of currently logged in user, false if anonymous 
 + */
@@ -38,11 +33,11 @@ function getUser() {
 }
 ```
 
-Lepší, co? Jak vidíte, tak lepším popisováním kódu pomůžete nejen PhpStormu, ale i ostatním vývojářům. 
+Lepší, co? Takhle tomu PhpStorm porozumí a ví, že se z metody vrací `string` nebo `boolean`. Jak vidíte, tak **lepším popisováním kódu pomůžete nejen PhpStormu, ale i ostatním vývojářům**. 
 
 Ať se nám to líbí nebo ne, tak spousta existujícího PHP kódu vypadá podobně jako ta ukázka nahoře. Ne každý má to štěstí, že může pracovat s kódem napsaným letos pro PHP 7.2 podle [DDD](/blog/2017/12/05/domain-driven-design-language/), naprosto striktně dodržujícím [SRP](/slovnicek/#solid) a používajícím [dependency injection](/blog/2017/01/15/jak-funguje-dependency-injection-v-symfony-a-v-nette/). Velmi pravděpodobně se naopak setkáte s kódem, který by mohl běžet i na PHP 5.3, není moc otestovaný a pochopit ho vám dá dost práce. 
 
-PhpStorm vám může velmi pomoct právě při správě takového legacy kódu. Ale může pracovat jen s tím, co mu dáte. A teď si ukážeme, jak mu dát těch informací co nejvíc. 
+PhpStorm vám může velmi pomoct právě při správě takového legacy kódu. Může ale pracovat jen s tím, co mu dáte. A teď si ukážeme, jak mu dát těch informací co nejvíc. 
 
 ## Popisování parametrů volání a návratových hodnot
 
@@ -67,7 +62,7 @@ public function createUser($name, $age, $address)
 
 Blok výše říká IDE, že parametr `$name` je `string`, `$age` je `integer` a `$address` je buď instance `Address` nebo `null`. Také tím říkáme, že metoda vrací instanci `User`. 
 
-Všimněte si, že v případě adresy povolujeme jak `Address` tak `null` - definuje se to pomocí svislítka (`|`). Je důležité popisovat všechny existující možnosti. V tomto případě nás díky tomu PhpStorm upozorní, že máme zkontrolovat, jestli není adresa prázdná, kdykoli voláme něco jako `$address->getZipCode()`. Přitom stále funguje napovídání metod třídy `Address`. 
+Všimněte si, že v případě adresy povolujeme jak `Address` tak `null`, což definujeme pomocí svislítka (`|`). Je důležité popisovat všechny existující možnosti. V tomto případě nás díky tomu PhpStorm upozorní, že máme *zkontrolovat, jestli není adresa `null`*, kdykoli voláme něco jako `$address->getZipCode()`. Přitom stále funguje napovídání metod třídy `Address`. 
 
 
 Docblocky jsou skvělý nástroj pro starší verze PHP. Pro moderní verze PHP však existuje nástroj ještě lepší. 
@@ -77,7 +72,6 @@ Docblocky jsou skvělý nástroj pro starší verze PHP. Pro moderní verze PHP 
 Od PHP 7.1 (pokud se obejdete bez nullable, tak již od 7.0) je možné výše zmíněný kus kódu přepsat do následující podoby: 
 
 ```diff
-<?php
 +declare(strict_types=1);
 // ...
 -/**
@@ -93,39 +87,59 @@ Od PHP 7.1 (pokud se obejdete bez nullable, tak již od 7.0) je možné výše z
 }
 ```
 
-Tato konstrukce má úplně ten samý význam, ale místo komentářů využívá přímo konstrukce jazyka. Díky tomu jsou typy vynuceny, když funkci použijeme. Pokud je `$age` definováno jako integer, tak si můžeme být jisti, že to opravdu integer bude. Není třeba žádné další validace. Samotné PHP by vyhodilo `TypeError` pokud bychom tam poslali cokoli jiného. Jen je třeba se ujistit, že máte v souboru [přidanou  `strict_types` deklaraci](http://php.net/manual/en/functions.arguments.php#functions.arguments.type-declaration.strict), která vypne přetypovávání. V opačném případě vám PHP s klidem převede `"11 horses"` na `11` [jako normálně](https://3v4l.org/QlLOV) (pro porovnání chování se [strict types](https://3v4l.org/bUAEr)).
+Zmizel velký komentář a přibylo jen pár znaků. Tato konstrukce má úplně ten samý význam, ale místo komentářů využívá přímo konstrukce jazyka. **Díky tomu jsou typy vynuceny, když funkci použijeme:** 
+
+```php
+<?php
+$this->createUser('Tom', 'tohle měl být integer');
+/*
+PHP Warning:  Uncaught TypeError: Argument 2 passed to createUser() must be of the type integer, string given, called in php shell code on line 1 and defined in php shell code:1
+Stack trace:
+#0 php shell code(1): createUser('tom', 'old')
+#1 {main}
+  thrown in php shell code on line 1
+*/
+```
+
+Dejte si ale pozor, že máte v souboru [přidanou  `strict_types` deklaraci](http://php.net/manual/en/functions.arguments.php#functions.arguments.type-declaration.strict), která vypne přetypovávání. V opačném případě vám PHP s klidem převede `"11 horses"` na `11` [jako normálně](https://3v4l.org/QlLOV) (pro porovnání chování se [strict types](https://3v4l.org/bUAEr)).
+
+Použití typů místo docblocků si můžete nechat i automaticky zkontrolovat [Symplify](https://github.com/Symplify/CodingStandard#block-comment-should-only-contain-useful-information-about-types-wrench) resp. [Slevomat](https://github.com/slevomat/coding-standard#slevomatcodingstandardtypehintstypehintdeclaration-) coding standardem. 
 
 ## Union typy a pole
 
-Union typ je typ, který se skládá z více dalších typů. Představme si například třídu, která pracuje s datumem a v konstruktoru přijímá všechny možné formáty (string, unix timestamp nebo instanci DateTime)
+Union typ je typ, který se skládá z více dalších typů (více ve [článku od Ondry Mirtese](https://medium.com/@ondrejmirtes/union-types-vs-intersection-types-fd44a8eacbb)). Představme si například třídu, která pracuje s datem a v konstruktoru přijímá všechny možné formáty (`string`, unix timestamp nebo instanci `DateTime`)
 
 ```php
 <?php 
 function __construct($date) { /* ... */ }
 ```
  
-V tomhle případě nemůžete uvést jako datový typ proměnné `$date` prostě `DateTimeInterface|string|int`. [Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Je potřeba se vrátit zpět k docblockům:  
+V tomhle případě nemůžete uvést jako datový typ proměnné `$date` takhle: 
 
 ```php
+<?php 
+function __construct(DateTimeInterface|string|int $date) { /* ... */ }
+```
+
+[Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Je potřeba se vrátit zpět k docblockům:  
+
 ```diff
-<?php
 +/**
 + * @param DateTimeInterface|string|int $date
 + */
 function __construct($date) { /* ... */ }
 ```
 
-Dalším případem, kde je třeba návrat k docblockům, jsou generika a pole objektů. Databázový dotaz může například vrátit kolekci uživatelů (`Collection`). Pomocí typové deklarace můžeme napsat
+Dalším případem, kde je třeba návrat k docblockům, jsou generika a pole objektů. Databázový dotaz může například vrátit kolekci uživatelů (třeba `MyApp\Entity\Collection`). Pomocí typové deklarace můžeme napsat
 
 ```php
 <?php
 function getUsers(): Collection {}
 ```
 
-Ale to nepostihne informaci o tom, že uvnitř kolekce jsou uživatelé. Takže nebude fungovat doplňování pro `$collection->first()->???`. Opět se musím vrátit k docblockům. 
+Ale to nepostihne informaci o tom, že uvnitř kolekce jsou uživatelé. Takže nebude fungovat doplňování pro `$collection->first()->???`. Opět se musíme vrátit k docblockům. 
 
 ```diff
-<?php
 +/**
 + * @return User[]|Collection
 + */
@@ -135,7 +149,7 @@ function getUsers(): Collection {}
 Tímto způsobem získáme doplňování jak pro `$collection->count()`, tak pro `$collection->first()->getUsername()`. 
 
 
-## Co když se typy mění za běhu? 
+## Co když je návratový typ dynamický?  
 
 Továrny a service lokátory vrací různé typy podle toho, s jakým parametrem je zavoláme. Podívejme se na následující kód:
 
@@ -149,7 +163,6 @@ $logger->???
 Můžeme však napovědět přímo v kódu dokumentačním komentářem.  
 
 ```diff
-<?php
 +/** @var LoggerInterface $logger */
 $logger = $container->get('LoggerInterface');
 $logger->log(/* code completion */);
@@ -209,7 +222,7 @@ U třídy výše (přiznávám, je to extrémní hovnokód) můžete vidět jedn
 * `@property-write` - znamená, že existuje veřejný atribut, do kterého lze zapisovat. Napovídání `$config->password = 'dummy';` bude fungovat, ale pokud se pokusíte atribut přečíst, PhpStorm to označí jako chybu. 
 * `@property` - kombinuje výše zmíněné (čtení a zápis)
 * `@method` - znamená, že existuje veřejná metoda a specifikuje její návratový typ. V tomto případě vám PhpStorm napoví `$config->reset()`. 
-* `@method static` - znamená, že existuje veřejný statická metoda. V tomto případě `Config::factory()` Tím pádem bude následně fungovat například napovídání v případě `Config::factory()->reset()`.  
+* `@method static` - znamená, že existuje veřejná statická metoda. V tomto případě `Config::factory()`. Tím pádem bude následně fungovat například napovídání v případě `Config::factory()->reset()`.  
 
 ## PhpStorm meta file
 
@@ -241,6 +254,6 @@ Bohužel je v současnosti možné takto specifikovat jen první parametr volán
 
 ## Závěr
 
-V článku jsme si ukázali různé možnosti, jak PhpStormu napovědět, jakého typu je proměnná nebo co vrací která metoda. V čím lepším stavu bude v tomto ohledu váš kód, tím bezpečněji můžete využívat přejmenovávání a refaktoringy v PhpStormu. Pokud chcete, tak můžete kontrolu typů přidat do svého coding standardu pomocí [`SlevomatCodingStandard.TypeHints.TypeHintDeclaration`](https://github.com/slevomat/coding-standard). 
+V článku jsme si ukázali různé možnosti, jak napovídat typ proměnné a návratové typy metod. **Zajímá vás, jak dál využívat toho, že PhpStorm vašemu kódu lépe rozumí? Tak si nenechte ujít [školení 25.1.](https://pehapkari.cz/vzdelavej-se/#ovladni-phpstorm-ndash-od-zakladu-po-profi-tipy), kde se dozvíte další užitečné tipy**. 
 
-Napadá vás ještě nějaký další způsob, jak napovídat typy, nebo jsem na něco zapomněl? Napište mi, nebo rovnou pošlete k článku pullrequest. 
+Napadá vás ještě nějaký další způsob, jak napovídat typy, nebo jsem na něco zapomněl? Napište mi, nebo rovnou pošlete k článku pullrequest.  
