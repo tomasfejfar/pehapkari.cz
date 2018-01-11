@@ -76,11 +76,18 @@ Docblocky jsou skvělý nástroj pro starší verze PHP. Pro moderní verze PHP 
 
 Od PHP 7.1 (pokud se obejdete bez nullable, tak již od 7.0) je možné výše zmíněný kus kódu přepsat do následující podoby: 
 
-```php
+```diff
 <?php
-declare(strict_types=1);
++declare(strict_types=1);
 // ...
-public function createUser(string $name, int $age, ?Address $address): User
+-/**
+- * @param string $name
+- * @param int $age
+- * @param Address|null $address
+- * @return User
+- */
+-public function createUser($name, $age, $address)
++public function createUser(string $name, int $age, ?Address $address): User
 {
     return $this->service->createUser($name, $age, $address);
 }
@@ -100,10 +107,11 @@ function __construct($date) { /* ... */ }
 V tomhle případě nemůžete uvést jako datový typ proměnné `$date` prostě `DateTimeInterface|string|int`. [Alespoň zatím ne](https://wiki.php.net/rfc/union_types). Je potřeba se vrátit zpět k docblockům:  
 
 ```php
+```diff
 <?php
-/**
- * @param DateTimeInterface|string|int $date
- */
++/**
++ * @param DateTimeInterface|string|int $date
++ */
 function __construct($date) { /* ... */ }
 ```
 
@@ -116,11 +124,11 @@ function getUsers(): Collection {}
 
 Ale to nepostihne informaci o tom, že uvnitř kolekce jsou uživatelé. Takže nebude fungovat doplňování pro `$collection->first()->???`. Opět se musím vrátit k docblockům. 
 
-```php
+```diff
 <?php
-/**
- * @return User[]|Collection
- */
++/**
++ * @return User[]|Collection
++ */
 function getUsers(): Collection {}
 ```
 
@@ -140,9 +148,9 @@ $logger->???
 
 Můžeme však napovědět přímo v kódu dokumentačním komentářem.  
 
-```php
+```diff
 <?php
-/** @var LoggerInterface $logger */
++/** @var LoggerInterface $logger */
 $logger = $container->get('LoggerInterface');
 $logger->log(/* code completion */);
 ```
