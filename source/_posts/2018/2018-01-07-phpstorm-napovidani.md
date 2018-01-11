@@ -11,9 +11,36 @@ lang: cs
 
 Fungující napovídání syntaxe vašeho kódu je naprosto základním předpokladem pro dobré fungování pokročilých nástrojů, které vám PhpStorm nabízí. Existuje několik možností, jak PhpStormu pomoci váš kód pochopit. Začneme těmi základními a postupně se dostaneme až k pokročilým. 
 
-Nástroje jako refaktoring a inspekce kódu jsou plně závislé na tom, jak dobře dokáže PhpStorm váš kód pochopit. Ale protože je PHP dynamicky typovaný jazyk, tak je to mnohem složitější úkol, než třeba ve staticky typované Javě.
+Nástroje jako refaktoring a inspekce kódu jsou plně závislé na tom, jak dobře dokáže PhpStorm váš kód pochopit. Ale protože je PHP dynamicky typovaný jazyk, tak je to mnohem složitější úkol, než třeba ve staticky typované Javě. 
 
-Ať se nám to líbí nebo ne, tak spousta existujícího PHP kódu je založena na více či méně náhodných polích. Ne každý má to štěstí, že může pracovat s kódem napsaným letos pro PHP 7.2 podle DDD a naprosto striktně dodržujícím SRP. Velmi pravděpodobně se naopak setkáte s kódem, který by mohl běžet i na PHP 5.3. A někdy bohužel na produkci i běží. 
+Pokusím se to přiblížit na následujícím kusu kódu. PhpStorm bude mít problém pochopit, co ten kód vrátí a nebude vám schopný dál nic napovídat, ani za vás nic pohlídat. 
+
+```php
+<?php
+function getUser() {
+    return $this->service->getUser();
+}
+```
+
+Co myslíte, že to vrátí? Instanci `User`? Nějaké ID? Uživatelské jméno? Co když to vrátí `false` pro nepřihlášeného uživatele? Těžko říct.  
+
+Nicméně člověk to může pochopit z kontextu. Podívám se dovnitř té servicy, vidím, že to tahá ze session a nikde to nic nedeserializuje a je tam test `if ($user != "")`. Tak to asi bude uživatelské jméno. Nejspíš. 
+
+A co takhle? 
+
+```diff
+<?php
++/**
++ * @return string|bool username of currently logged in user, false if anonymous 
++ */
+function getUser() {
+    return $this->service->getUser();
+}
+```
+
+Lepší, co? Jak vidíte, tak lepším popisováním kódu pomůžete nejen PhpStormu, ale i ostatním vývojářům. 
+
+Ať se nám to líbí nebo ne, tak spousta existujícího PHP kódu vypadá podobně jako ta ukázka nahoře. Ne každý má to štěstí, že může pracovat s kódem napsaným letos pro PHP 7.2 podle [DDD](/blog/2017/12/05/domain-driven-design-language/), naprosto striktně dodržujícím [SRP](/slovnicek/#solid) a používajícím [dependency injection](/blog/2017/01/15/jak-funguje-dependency-injection-v-symfony-a-v-nette/). Velmi pravděpodobně se naopak setkáte s kódem, který by mohl běžet i na PHP 5.3, není moc otestovaný a pochopit ho vám dá dost práce. 
 
 PhpStorm vám může velmi pomoct právě při správě takového legacy kódu. Ale může pracovat jen s tím, co mu dáte. A teď si ukážeme, jak mu dát těch informací co nejvíc. 
 
