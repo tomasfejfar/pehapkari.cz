@@ -60,12 +60,12 @@ Docblocky jsou dokumentační komentáře. Nejsou přímo parsovány při zpraco
  */
 public function createUser($name, $age, $address)
 {
-    return new User($name, $age, $address);
+    return $this->service->createUser($name, $age, $address);
 }
 ```
 
 
-Blok výše říká IDE, že parametr `$name` je `string`, `$age` je `integer` a `$address` je buď instance `Address` nebo `null`. Také tím říkáme, že metoda vrací instanci `User`. I když v tomto konkrétním případě by PhpStorm byl schopný odhadnout návratový typ `User` sám, mnohdy to není možné. 
+Blok výše říká IDE, že parametr `$name` je `string`, `$age` je `integer` a `$address` je buď instance `Address` nebo `null`. Také tím říkáme, že metoda vrací instanci `User`. 
 
 Všimněte si, že v případě adresy povolujeme jak `Address` tak `null` - definuje se to pomocí svislítka (`|`). Je důležité popisovat všechny existující možnosti. V tomto případě nás díky tomu PhpStorm upozorní, že máme zkontrolovat, jestli není adresa prázdná, kdykoli voláme něco jako `$address->getZipCode()`. Přitom stále funguje napovídání metod třídy `Address`. 
 
@@ -82,7 +82,7 @@ declare(strict_types=1);
 // ...
 public function createUser(string $name, int $age, ?Address $address): User
 {
-    return new User($name, $age, $address);
+    return $this->service->createUser($name, $age, $address);
 }
 ```
 
